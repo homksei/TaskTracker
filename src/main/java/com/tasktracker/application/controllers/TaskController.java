@@ -82,18 +82,12 @@ public class TaskController {
 	@GetMapping("/my_tasks")
 	public ResponseEntity<List<Task>> getAllMyTasks(@RequestParam(required = false) String assigne, SignupRequest signUpRequest) {
 
-
-		// Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
 		UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-			// if (principal instanceof UserDetailsImpl) {
-			// 	String username = ((UserDetailsImpl)principal).getUsername();
-			// } else {
-			// 	String username = principal.toString();
-			// }
-			// assigne = toString(principal.getUsername());
-			String username =  userDetails.getUsername();
-			List<Task> tasks = taskRepository.findByAssigned(username);
+
+			String firstname = userDetails.getFirstname();
+			String lastname = userDetails.getLastname();
+			String fullname = lastname + ", " + firstname;
+			List<Task> tasks = taskRepository.findByAssigned(fullname);
 
 			if (tasks.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
