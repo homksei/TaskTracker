@@ -70,7 +70,7 @@ public void existentUserCanGetTokenAndAuthentication() throws Exception {
 
     @Test
     public void shouldNotAllowAccessToUnauthUsers() throws Exception {
-        String username = "user1";
+        String username = "odmen";
         String password = "12345678";
     
         String body = "{\"username\":" + "\"" + username + "\"," + " \"password\":" + "\""+  password + "\"" + "}";
