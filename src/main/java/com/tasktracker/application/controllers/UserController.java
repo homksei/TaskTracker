@@ -1,4 +1,4 @@
-package com.tasktracker.application.controller;
+package com.tasktracker.application.controllers;
 
 import java.util.HashSet;
 import java.util.List;
