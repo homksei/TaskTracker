@@ -35,8 +35,16 @@ import org.junit.jupiter.api.Test;
 public class TokenAuthenticationServiceTest {
 
 
-    private String adminTokenValue = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYwODQ2NzAxNCwiZXhwIjoxNjA4NTUzNDE0fQ.7B1dLJC8-dS-_sNJ2lr3sFuTzRnJxwldLSzl5-hX87b_-Frg6achNUaVwRn6rmdCS9CzuYEI9LqsE1m_N_3fAw";
-    private String userTokenValue = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvZG1lbiIsImlhdCI6MTYwODQ2NzA5OCwiZXhwIjoxNjA4NTUzNDk4fQ.ST9IqgZv3nSxsuZM0IXonIBnxkIudAf3_T1V9us32nRozt9bMqHOVCO6A7dW7FpNU2B8dXt4uxeQ6oXLhN5_hA";
+    // private String adminTokenValue = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYwODQ2NzAxNCwiZXhwIjoxNjA4NTUzNDE0fQ.7B1dLJC8-dS-_sNJ2lr3sFuTzRnJxwldLSzl5-hX87b_-Frg6achNUaVwRn6rmdCS9CzuYEI9LqsE1m_N_3fAw";
+    // private String userTokenValue = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvZG1lbiIsImlhdCI6MTYwODQ2NzA5OCwiZXhwIjoxNjA4NTUzNDk4fQ.ST9IqgZv3nSxsuZM0IXonIBnxkIudAf3_T1V9us32nRozt9bMqHOVCO6A7dW7FpNU2B8dXt4uxeQ6oXLhN5_hA";
+
+
+    private String usernameAdmin= "admin";
+    private String passwordAdmin = "password";
+
+    private String usernameUser = "odmen";
+    private String passwordUser = "12345678";
+
 
     @Value("${server.port}")
     private int portNumber;
@@ -61,10 +69,10 @@ public class TokenAuthenticationServiceTest {
 
     @Test
     public void existentUserCanGetTokenAndAuthentication() throws Exception {
-    String username = "admin";
-    String password = "password";
+    // String username = "admin";
+    // String password = "password";
 
-    String body = "{\"username\":" + "\"" + username + "\"," + " \"password\":" + "\""+  password + "\"" + "}";
+    String body = "{\"username\":" + "\"" + usernameAdmin + "\"," + " \"password\":" + "\""+  passwordAdmin + "\"" + "}";
 
     MvcResult result = mvc.perform(MockMvcRequestBuilders.post("/api/auth/signin")
             .contentType("application/json").content(body))
@@ -81,10 +89,10 @@ public class TokenAuthenticationServiceTest {
 
     @Test
     public void shouldNotAllowAccessToUnauthUsers() throws Exception {
-        String username = "odmen";
-        String password = "12345678";
+        // String username = "odmen";
+        // String password = "12345678";
     
-        String body = "{\"username\":" + "\"" + username + "\"," + " \"password\":" + "\""+  password + "\"" + "}";
+        String body = "{\"username\":" + "\"" + usernameUser + "\"," + " \"password\":" + "\""+  passwordUser + "\"" + "}";
     
         MvcResult result = mvc.perform(MockMvcRequestBuilders.post("/api/auth/signin")
                 .contentType("application/json").content(body))
@@ -100,8 +108,8 @@ public class TokenAuthenticationServiceTest {
         }
 
     @Test
-    public void newUserCannotBeCreatedByUser() throws Exception {
-        String newusername = "odmen";
+    public void newUserCannotBeUpdatedByUser() throws Exception {
+        String newusername = "odmenka";
         String newpassword = "12345678";
         String firstname = "First";
         String lastname = "Last";
@@ -116,13 +124,23 @@ public class TokenAuthenticationServiceTest {
                       " \"password\":" + "\""+  newpassword + "\"," + 
                       " \"role\":" + "[\""+  role + "\"] ," + 
                       " \"baseSalary\":" + "\"" + baseSalary + "\"}";
+
+        String body = "{\"username\":" + "\"" + usernameUser + "\"," + " \"password\":" + "\""+  passwordUser + "\"" + "}";
     
-        mvc.perform(MockMvcRequestBuilders.post("/api/user_update").contentType("application/json").content(newUser).header("Authorization", "Bearer " + userTokenValue)).andExpect(status().isForbidden());
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.post("/api/auth/signin")
+                .contentType("application/json").content(body))
+                .andExpect(status().isOk()).andReturn();
+    
+        JSONObject object = new JSONObject(result.getResponse().getContentAsString());
+        String token = object.getString("accessToken");
+    
+        mvc.perform(MockMvcRequestBuilders.post("/api/user_update").contentType("application/json").content(newUser).header("Authorization", "Bearer " + token)).andExpect(status().isForbidden());
 
         }
 
-    public void newUserCanBeCreatedByAdmin() throws Exception {
-        String username = "odmen";
+    //@Test
+    public void newUserCanBeUpdatedByAdmin() throws Exception {
+        String username = "odmenka";
         String password = "12345678";
         String firstname = "First";
         String lastname = "Last";
@@ -130,7 +148,7 @@ public class TokenAuthenticationServiceTest {
         String role = "user";
         String baseSalary = "20000";
     
-        String body = "{\"username\":" + "\"" + username + "\"," + 
+        String newUser = "{\"username\":" + "\"" + username + "\"," + 
                         "\"firstname\":" + "\"" + firstname + "\"," + 
                         " \"lastname\":" + "\""+  lastname + "\"," + 
                         " \"email\":" + "\""+  email + "\"," + 
@@ -138,11 +156,20 @@ public class TokenAuthenticationServiceTest {
                         " \"role\":" + "[\""+  role + "\"]," +
                         " \"baseSalary\":" + "\"" + baseSalary + "\"}";
 
+        String body = "{\"username\":" + "\"" + usernameAdmin + "\"," + " \"password\":" + "\""+  passwordAdmin + "\"" + "}";
 
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.post("/api/auth/signin")
+                .contentType("application/json").content(body))
+                .andExpect(status().isOk()).andReturn();
     
-        mvc.perform(MockMvcRequestBuilders.post("/user_update").contentType("application/json").content(body).header("Authorization", "Bearer " + adminTokenValue)).andExpect(status().isForbidden());
+        JSONObject object = new JSONObject(result.getResponse().getContentAsString());
+        String token = object.getString("accessToken");
+        System.out.println(token);
+    
+        mvc.perform(MockMvcRequestBuilders.post("/api/user_update").contentType("application/json").content(newUser).header("Authorization", "Bearer " + token)).andExpect(status().isOk());
 
         }
     
 
   }
+
